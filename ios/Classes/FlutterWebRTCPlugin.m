@@ -3,6 +3,7 @@
 #import "FlutterRTCMediaStream.h"
 #import "FlutterRTCDataChannel.h"
 #import "FlutterRTCVideoRenderer.h"
+#import "FlutterRTCVideoViewFactory.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <WebRTC/WebRTC.h>
@@ -30,6 +31,7 @@
                                                                   viewController:viewController
                                                                     withTextures:[registrar textures]];
     [registrar addMethodCallDelegate:instance channel:channel];
+    [registrar registerViewFactory:instance withId:@"FlutterRTCVideoView"];
 }
 
 - (instancetype)initWithChannel:(FlutterMethodChannel *)channel

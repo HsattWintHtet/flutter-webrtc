@@ -58,8 +58,10 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
 
     try {
       var stream = await navigator.getUserMedia(mediaConstraints);
-      _localStream = stream;
-      _localRenderer.srcObject = _localStream;
+      setState(() {
+        _localStream = stream;
+        _localRenderer.srcObject = _localStream;
+      });
     } catch (e) {
       print(e.toString());
     }
@@ -123,10 +125,15 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
         builder: (context, orientation) {
           return new Center(
             child: new Container(
-              margin: new EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: RTCVideoView(_localRenderer),
+//              margin: new EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+//              width: MediaQuery.of(context).size.width,
+//              height: MediaQuery.of(context).size.height,
+              child: Platform.isIOS
+                  ? (_localStream == null
+                      ? Container()
+                      : RTCPlatformVideoView(_localStream)
+                  )
+                  : RTCVideoView(_localRenderer),
               decoration: new BoxDecoration(color: Colors.black54),
             ),
           );

@@ -3,6 +3,7 @@ export 'media_stream_track.dart';
 export 'media_stream.dart';
 export 'rtc_data_channel.dart';
 export 'rtc_video_view.dart';
+export 'rtc_platform_video_view.dart';
 export 'rtc_ice_candidate.dart';
 export 'rtc_session_description.dart';
 export 'rtc_peerconnection.dart';
