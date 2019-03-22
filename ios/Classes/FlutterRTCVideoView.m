@@ -18,16 +18,19 @@
 }
 
 - (void)videoView:(id <RTCVideoRenderer>)videoView didChangeVideoSize:(CGSize)size {
-    self.size = size;
-    [self.videoView setSize:size];
-//    self.videoView.frame = CGRectMake(0, 0, size.width, size.height);
-    NSDictionary *event = @{
-        @"width": @(size.width),
-        @"height": @(size.height)
-    };
-    for (FlutterEventSink sink in self.eventSinks) {
-        if (sink)
-            sink(event);
+    if (self.size.width != size.width
+        && self.size.height != size.height) {
+        [self.videoView setSize:size];
+        NSDictionary *event = @{
+            @"event": @"didChangeVideoSize",
+            @"width": @(size.width),
+            @"height": @(size.height)
+        };
+        for (FlutterEventSink sink in self.eventSinks) {
+            if (sink)
+                sink(event);
+        }
+        self.size = size;
     }
 }
 
@@ -35,6 +38,7 @@
     [self.eventSinks addObject:events];
     if (self.size.width != 0 && self.size.height != 0) {
         NSDictionary *event = @{
+            @"event": @"didChangeVideoSize",
             @"width": @(self.size.width),
             @"height": @(self.size.height)
         };
@@ -44,8 +48,8 @@
 }
 
 - (FlutterError *_Nullable)onCancelWithArguments:(id _Nullable)arguments {
+    [self.eventSinks removeAllObjects];
     return nil;
 }
-
 
 @end

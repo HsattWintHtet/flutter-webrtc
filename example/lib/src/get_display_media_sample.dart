@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_webrtc/webrtc.dart';
 import 'dart:core';
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_webrtc/webrtc.dart';
+
+
 /*
  * getDisplayMedia sample
  */
@@ -9,7 +12,8 @@ class GetDisplayMediaSample extends StatefulWidget {
   static String tag = 'get_display_media_sample';
 
   @override
-  _GetDisplayMediaSampleState createState() => new _GetDisplayMediaSampleState();
+  _GetDisplayMediaSampleState createState() =>
+      new _GetDisplayMediaSampleState();
 }
 
 class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
@@ -54,8 +58,10 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
 
     try {
       var stream = await navigator.getDisplayMedia(mediaConstraints);
-      _localStream = stream;
-      _localRenderer.srcObject = _localStream;
+      setState(() {
+        _localStream = stream;
+        _localRenderer.srcObject = _localStream;
+      });
     } catch (e) {
       print(e.toString());
     }
@@ -72,6 +78,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     try {
       await _localStream.dispose();
       _localRenderer.srcObject = null;
+      _localStream = null;
     } catch (e) {
       print(e.toString());
     }
@@ -90,19 +97,22 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
       body: new OrientationBuilder(
         builder: (context, orientation) {
           return new Center(
-            child: new Stack(
-                  children: <Widget>[
-                    new Center(
-                      child:new Text('counter: ' + _counter.toString()),
-                    ),
-                    new Container(
-                      margin: new EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height,
-                      child: RTCVideoView(_localRenderer),
-                      decoration: new BoxDecoration(color: Colors.black54),
-                    )
-                  ]),
+            child: new Stack(children: <Widget>[
+              new Center(
+                child: new Text('counter: ' + _counter.toString()),
+              ),
+              new Container(
+                margin: new EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Platform.isIOS
+                    ? (_localStream == null
+                        ? Container()
+                        : RTCPlatformVideoView(_localStream))
+                    : RTCVideoView(_localRenderer),
+                decoration: new BoxDecoration(color: Colors.black54),
+              )
+            ]),
           );
         },
       ),
