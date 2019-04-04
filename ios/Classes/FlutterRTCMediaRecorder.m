@@ -30,7 +30,6 @@
         _audioSink = [[FlutterRTCAudioSink alloc] initWithAudioTrack:audio];
     else
         NSLog(@"Audio track is nil");
-    NSLog(@"💙💙💙💙💙💙💙💙Start writing to file %@💙💙💙💙💙💙💙💙", out);
     return self;
 }
 
@@ -104,9 +103,6 @@
         return;
     }
     id <RTCVideoFrameBuffer> buffer = frame.buffer;
-    if ([buffer isKindOfClass:RTCCVPixelBuffer.class]) {
-        NSLog(@"It's RTCCVPixelBuffer");
-    }
     CVPixelBufferRef _pixelBufferRef = ((RTCCVPixelBuffer *) buffer).pixelBuffer;
 
     if (_pixelBufferRef == nil) {
@@ -116,8 +112,6 @@
 
     CMVideoFormatDescriptionRef formatDescription;
     OSStatus status = CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, _pixelBufferRef, &formatDescription);
-
-    NSLog(@"Fucking os status %@", @(status));
 
     CMSampleTimingInfo timingInfo;
     timingInfo.decodeTimeStamp = kCMTimeInvalid;
@@ -134,13 +128,12 @@
             &timingInfo,
             &outBuffer);
 
-    if ([self.writerInput appendSampleBuffer:outBuffer])
+    if (![self.writerInput appendSampleBuffer:outBuffer])
         NSLog(@"Frame not appended %@", self.assetWriter.error);
     CVPixelBufferRelease(_pixelBufferRef);
 }
 
 - (void)stop {
-    NSLog(@"💙💙💙💙💙💙💙💙Stop called💙💙💙💙💙💙💙💙");
     if (_audioSink != nil) {
         _audioSink.bufferCallback = nil;
         [_audioSink close];
@@ -150,9 +143,9 @@
     [_audioWriter markAsFinished];
     dispatch_async(dispatch_get_main_queue(), ^{
        [self.assetWriter finishWritingWithCompletionHandler:^{
-           NSLog(@"💙💙💙💙💙💙💙💙Finished writing to file💙💙💙💙💙💙💙💙");
-           NSLog(@"💙💙💙💙💙💙💙💙with url: %@💙💙💙💙💙💙💙💙", self.output);
-           NSLog(@"❤️❤️❤️❤️❤️❤️❤️❤️with error: %@❤️❤️❤️❤️❤️❤️❤️❤️", self.assetWriter.error);
+           NSLog(@"Finished writing to file: %@", self.output);
+           if (self.assetWriter.error != nil)
+               NSLog(@"with error: %@", self.assetWriter.error);
        }];
     });
 }
