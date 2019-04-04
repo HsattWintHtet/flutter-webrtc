@@ -61,6 +61,7 @@
     self.localStreams = [NSMutableDictionary new];
     self.localTracks = [NSMutableDictionary new];
     self.renders = [[NSMutableDictionary alloc] init];
+    self.recorders = [NSMutableDictionary new];
     return self;
 }
 
