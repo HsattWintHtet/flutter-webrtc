@@ -84,13 +84,14 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   }
 
   _startRecording() async {
-    if (Platform.isIOS) {
-      print("Recording is not available on iOS");
-      return;
+    String filePath;
+    if (Platform.isAndroid) {
+      final storagePath = await getExternalStorageDirectory();
+      filePath = storagePath.path + '/webrtc_sample/test.mp4';
+    } else {
+      final storagePath = await getApplicationDocumentsDirectory();
+      filePath = storagePath.path + '/test${DateTime.now()}.mp4';
     }
-    //TODO(rostopira): request write storage permission
-    final storagePath = await getExternalStorageDirectory();
-    final filePath = storagePath.path + '/webrtc_sample/test.mp4';
     _mediaRecorder = MediaRecorder();
     setState((){});
     await _localStream.getMediaTracks();

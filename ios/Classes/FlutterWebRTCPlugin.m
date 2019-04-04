@@ -3,6 +3,7 @@
 #import "FlutterRTCMediaStream.h"
 #import "FlutterRTCDataChannel.h"
 #import "FlutterRTCVideoRenderer.h"
+#import "FlutterRTCMediaRecorder.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <WebRTC/WebRTC.h>
@@ -400,6 +401,34 @@
                                            message:[NSString stringWithFormat:@"Error: peerConnection not found!"]
                                            details:nil]);
             }
+    }else if ([@"startRecordToFile" isEqualToString:call.method]) {
+        NSDictionary* argsMap = call.arguments;
+        NSNumber* recorderId = argsMap[@"recorderId"];
+        NSString* path = argsMap[@"path"];
+        NSString* trackId = argsMap[@"videoTrackId"];
+        NSString* audioTrackId = argsMap[@"audioTrackId"];
+        RTCMediaStreamTrack *track = self.localTracks[trackId];
+        RTCMediaStreamTrack *audioTrack = self.localTracks[audioTrackId];
+        if (track != nil && [track isKindOfClass:[RTCVideoTrack class]]) {
+            NSURL* pathUrl = [NSURL fileURLWithPath:path];
+            self.recorders[recorderId] = [[FlutterRTCMediaRecorder alloc]
+                                          initWithVideoTrack:(RTCVideoTrack *)track
+                                          audioTrack:(RTCAudioTrack *)audioTrack
+                                          outputFile:pathUrl
+                                          ];
+        }
+        result(nil);
+    }else if ([@"stopRecordToFile" isEqualToString:call.method]) {
+        NSDictionary* argsMap = call.arguments;
+        NSNumber* recorderId = argsMap[@"recorderId"];
+        FlutterRTCMediaRecorder* recorder = self.recorders[recorderId];
+        if (recorder != nil) {
+            [recorder stop];
+            [self.recorders removeObjectForKey:recorderId];
+        } else {
+            NSLog(@"Recorder is nil");
+        }
+        result(nil);
     } else {
         result(FlutterMethodNotImplemented);
     }

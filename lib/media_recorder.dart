@@ -8,20 +8,24 @@ class MediaRecorder {
   static final _random = Random();
   final _recorderId = _random.nextInt(0x7FFFFFFF);
 
+  /// For Android use audioChannel param
+  /// For iOS use audioTrack
   Future<void> start(String path, {
     MediaStreamTrack videoTrack,
+    MediaStreamTrack audioTrack,
     RecorderAudioChannel audioChannel
     //TODO: add codec/quality options
   }) async {
     if (path == null)
       throw ArgumentError.notNull("path");
-    if (audioChannel == null && videoTrack == null)
+    if (audioChannel == null && videoTrack == null && audioTrack == null)
       throw Exception("Neither audio nor video track were provided");
 
     await WebRTC.methodChannel().invokeMethod('startRecordToFile', {
       'path' : path,
       'audioChannel' : audioChannel?.index,
       'videoTrackId' : videoTrack?.id,
+      'audioTrackId' : audioTrack?.id,
       'recorderId' : _recorderId
     });
   }
