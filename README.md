@@ -54,7 +54,7 @@ We intend to implement support the following features:
 - [X] Screen Capture (iOS/Android)
 - [ ] ORTC API
 - [ ] Support [Fuchsia](https://fuchsia.googlesource.com/)
-- [ ] MediaRecorder
+- [X] MediaRecorder
 
 ### Example
 
