@@ -1,8 +1,8 @@
 import 'dart:io';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/webrtc.dart';
-import 'dart:core';
 import 'package:path_provider/path_provider.dart';
 
 /*
@@ -44,7 +44,7 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
   // Platform messages are asynchronous, so we initialize in an async method.
   _makeCall() async {
     final Map<String, dynamic> mediaConstraints = {
-      "audio": false,
+      "audio": true,
       "video": {
         "mandatory": {
           "minWidth":'1280', // Provide your own width, height and frame rate here
@@ -96,9 +96,11 @@ class _GetUserMediaSampleState extends State<GetUserMediaSample> {
     setState((){});
     await _localStream.getMediaTracks();
     final videoTrack = _localStream.getVideoTracks().firstWhere((track) => track.kind == "video");
+    final audioTrack = _localStream.getAudioTracks().firstWhere((track) => track.kind == "audio");
     await _mediaRecorder.start(
       filePath,
       videoTrack: videoTrack,
+      audioTrack: audioTrack,
     );
   }
 

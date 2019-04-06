@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/webrtc.dart';
+import 'package:path_provider/path_provider.dart';
+
 import 'dart:core';
 import 'dart:async';
-
+import 'dart:io';
 
 class LoopBackSample extends StatefulWidget {
 
@@ -14,11 +16,14 @@ class LoopBackSample extends StatefulWidget {
 
 class _MyAppState extends State<LoopBackSample> {
   MediaStream _localStream;
+  MediaStream _remoteStream;
   RTCPeerConnection _peerConnection;
   final _localRenderer = new RTCVideoRenderer();
   final _remoteRenderer = new RTCVideoRenderer();
   bool _inCalling = false;
   Timer _timer;
+  MediaRecorder _mediaRecorder;
+  get _isRec => _mediaRecorder != null;
 
   @override
   initState() {
@@ -26,7 +31,7 @@ class _MyAppState extends State<LoopBackSample> {
     initRenderers();
   }
 
-    @override
+  @override
   deactivate() {
     super.deactivate();
     if (_inCalling) {
@@ -74,10 +79,12 @@ class _MyAppState extends State<LoopBackSample> {
   _onAddStream(MediaStream stream) {
     print('addStream: ' + stream.id);
     _remoteRenderer.srcObject = stream;
+    _remoteStream = stream;
   }
 
   _onRemoveStream(MediaStream stream) {
     _remoteRenderer.srcObject = null;
+    _remoteStream = null;
   }
 
   _onCandidate(RTCIceCandidate candidate) {
@@ -87,6 +94,33 @@ class _MyAppState extends State<LoopBackSample> {
 
   _onRenegotiationNeeded() {
     print('RenegotiationNeeded');
+  }
+
+  _startRecording() async {
+    String filePath;
+    if (Platform.isAndroid) {
+      final storagePath = await getExternalStorageDirectory();
+      filePath = storagePath.path + '/webrtc_sample/test.mp4';
+    } else {
+      final storagePath = await getApplicationDocumentsDirectory();
+      filePath = storagePath.path + '/test${DateTime.now()}.mp4';
+    }
+    _mediaRecorder = MediaRecorder();
+    setState((){});
+    final videoTrack = _remoteStream.getVideoTracks().firstWhere((track) => track.kind == "video");
+    final audioTrack = _remoteStream.getAudioTracks().firstWhere((track) => track.kind == "audio");
+    await _mediaRecorder.start(
+      filePath,
+      videoTrack: videoTrack,
+      audioTrack: audioTrack,
+    );
+  }
+
+  _stopRecording() async {
+    await _mediaRecorder?.stop();
+    setState((){
+      _mediaRecorder = null;
+    });
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -192,6 +226,12 @@ class _MyAppState extends State<LoopBackSample> {
       new Scaffold(
         appBar: new AppBar(
           title: new Text('LoopBack example'),
+          actions: _inCalling ? <Widget>[
+          new IconButton(
+            icon: Icon(_isRec ? Icons.stop : Icons.fiber_manual_record),
+            onPressed: _isRec ? _stopRecording : _startRecording,
+          ),
+        ] : null,
         ),
         body: new OrientationBuilder(
           builder: (context, orientation) {
